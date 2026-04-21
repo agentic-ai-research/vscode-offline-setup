@@ -6,88 +6,81 @@ When a user points Claude Code at this repo, follow the instructions below.
 ## What this repo does
 
 Installs and configures:
-- **Ollama** — local LLM server (port 11434)
-- **Gemma 4 27B** — primary local AI model (~9.6 GB)
+- **Ollama** — local LLM server (port 11434) with reliable LaunchAgent + keep-alive
+- **Gemma 4 27B** (or RAM-appropriate model) — primary local AI model
 - **Continue** VS Code extension — AI chat + tab autocomplete
 - **Cline** VS Code extension — autonomous AI coding agent
+- **Cline watchdog** — auto-restores Cline config if VS Code updates reset it
 
-Target machine: macOS (Apple Silicon), 16 GB RAM minimum.
+Target machine: macOS (Apple Silicon), 8 GB RAM minimum (16 GB for Gemma 4).
 
-## How to run setup
+## How to run setup on a new machine
 
-When the user asks you to set up their machine, run this single command:
+When the user asks you to set up their machine, run:
 
 ```bash
-chmod +x scripts/setup.sh scripts/configure-cline.sh && bash scripts/setup.sh
+chmod +x scripts/*.sh && bash scripts/setup.sh
 ```
 
-That script handles everything end-to-end. After it finishes, tell the user:
-> "Setup complete. Reload VS Code with Cmd+Shift+P → Developer: Reload Window."
+That script handles everything end-to-end. After it finishes tell the user:
+> "Setup complete. Reload VS Code with Cmd+Shift+P → Developer: Reload Window, then run `bash scripts/check.sh` to verify."
+
+## How to run a health check
+
+```bash
+bash scripts/check.sh
+```
+
+This checks every component. Read the output — any ❌ or ⚠️ line includes the fix command.
 
 ## File reference
 
 | File | Purpose |
-|---|---|
-| `scripts/setup.sh` | Master setup script — runs all steps in order |
-| `scripts/configure-cline.sh` | Writes Cline's Ollama config into VS Code's state DB |
-| `continue/config.json` | Continue extension config (models, autocomplete, embeddings) |
-| `README.md` | Full manual setup guide with troubleshooting |
+|------|---------|
+| `scripts/setup.sh` | Master setup (resilient, re-runnable, 8 steps) |
+| `scripts/check.sh` | Full health check with fix hints |
+| `scripts/configure-cline.sh [model]` | Writes Ollama config into VS Code's state DB |
+| `scripts/pick-models.sh` | RAM-aware model selection |
+| `scripts/install-launchagent.sh` | Reliable Ollama boot service + OLLAMA_KEEP_ALIVE=-1 |
+| `scripts/install-cline-watchdog.sh` | Watchdog that auto-restores Cline after VS Code updates |
+| `scripts/update-models.sh` | Pull latest versions of all downloaded models |
+| `scripts/backup-vscode.sh` | Backup/restore VS Code settings, keybindings, extensions |
+| `continue/config.json` | Continue extension config (models + autocomplete) |
+| `vscode/tasks.json` | VS Code tasks for health check, restore, update, backup |
+| `vscode-backup/` | User's backed-up VS Code settings (committed to repo) |
 
-## Individual steps (if setup.sh fails partway)
+## Individual fix commands
 
-### Install Ollama
+### Ollama not running
 ```bash
-brew install ollama && brew services start ollama
+bash scripts/install-launchagent.sh
 ```
 
-### Download models
+### Cline config was reset by a VS Code update
 ```bash
-ollama pull gemma4
-ollama pull qwen2.5-coder:14b
-ollama pull qwen2.5-coder:7b
+bash scripts/configure-cline.sh
+# Then: Cmd+Shift+P → Developer: Reload Window
 ```
 
-### Install VS Code extensions
+### Missing models
 ```bash
-code --install-extension Continue.continue
-code --install-extension saoudrizwan.claude-dev
+bash scripts/pick-models.sh --pull
 ```
 
-### Apply Continue config
+### Restore VS Code settings from backup
 ```bash
-mkdir -p ~/.continue && cp continue/config.json ~/.continue/config.json
+bash scripts/backup-vscode.sh restore
 ```
 
-### Configure Cline
+### Update all models to latest
 ```bash
-bash scripts/configure-cline.sh gemma4
+bash scripts/update-models.sh
 ```
 
-## Switching models
+## Notes for Claude Code
 
-To change the model Cline uses:
-```bash
-bash scripts/configure-cline.sh qwen2.5-coder:14b
-```
-
-To add a model to Continue, edit `~/.continue/config.json` and add a new entry to the `models` array, then reload VS Code.
-
-## Verify everything is working
-
-```bash
-# Ollama running?
-curl http://localhost:11434
-
-# Models downloaded?
-ollama list
-
-# Model loaded in RAM?
-ollama ps
-```
-
-## Notes
-
-- 16 GB RAM is the minimum for Gemma 4 27B. It will work but leave little headroom — close Chrome and other heavy apps.
-- If the user only has 8 GB RAM, use `qwen2.5-coder:7b` instead of `gemma4` throughout.
-- Cline's config is written to VS Code's SQLite state database. If VS Code updates and resets it, re-run `configure-cline.sh`.
-- The `code` CLI must be available in PATH. If not, open VS Code → Cmd+Shift+P → "Shell Command: Install 'code' command in PATH".
+- Always run `check.sh` after making any changes to verify the fix worked.
+- If the user is on 8 GB RAM, the primary model will be `qwen2.5-coder:7b`, not `gemma4`. Do not override `pick-models.sh`.
+- The Cline watchdog writes logs to `~/.ollama/cline-watchdog.log` — check this if Cline config keeps resetting.
+- `setup.sh` is idempotent — re-running it is always safe and will skip already-completed steps.
+- VS Code must be opened and closed once before the state DB exists for Cline config to be written.

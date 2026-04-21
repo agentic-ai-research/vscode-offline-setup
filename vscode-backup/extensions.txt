@@ -1,0 +1,8 @@
+continue.continue
+github.copilot-chat
+ms-python.debugpy
+ms-python.python
+ms-python.vscode-pylance
+ms-python.vscode-python-envs
+oxc.oxc-vscode
+saoudrizwan.claude-dev

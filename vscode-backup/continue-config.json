@@ -1,0 +1,98 @@
+{
+  "models": [
+    {
+      "title": "Claude 3.5 Sonnet (Free Trial)",
+      "provider": "free-trial",
+      "model": "claude-3-5-sonnet-latest",
+      "systemMessage": "You are an expert software developer. You give helpful and concise responses."
+    },
+    {
+      "title": "GPT-4o (Free Trial)",
+      "provider": "free-trial",
+      "model": "gpt-4o",
+      "systemMessage": "You are an expert software developer. You give helpful and concise responses."
+    },
+    {
+      "title": "Llama3.1 70b (Free Trial)",
+      "provider": "free-trial",
+      "model": "llama3.1-70b",
+      "systemMessage": "You are an expert software developer. You give helpful and concise responses."
+    },
+    {
+      "title": "Codestral (Free Trial)",
+      "provider": "free-trial",
+      "model": "codestral-latest",
+      "systemMessage": "You are an expert software developer. You give helpful and concise responses."
+    },
+    {
+      "title": "Gemma 4 27B (Local)",
+      "provider": "ollama",
+      "model": "gemma4",
+      "apiBase": "http://localhost:11434",
+      "contextLength": 32768,
+      "completionOptions": {
+        "temperature": 0.1,
+        "maxTokens": 4096
+      }
+    },
+    {
+      "title": "Qwen Coder 14B (Chat)",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:14b",
+      "apiBase": "http://localhost:11434",
+      "contextLength": 32768,
+      "completionOptions": {
+        "temperature": 0.1,
+        "maxTokens": 4096
+      }
+    },
+    {
+      "title": "DeepSeek R1 7B (Reasoning)",
+      "provider": "ollama",
+      "model": "deepseek-r1:7b",
+      "apiBase": "http://localhost:11434",
+      "contextLength": 131072,
+      "completionOptions": {
+        "temperature": 0.1,
+        "maxTokens": 4096
+      },
+      "capabilities": {
+        "tools": false
+      }
+    },
+    {
+      "title": "Qwen 3.5 35B (Powerful)",
+      "provider": "ollama",
+      "model": "qwen3.5:35b-a3b",
+      "apiBase": "http://localhost:11434",
+      "contextLength": 32768,
+      "completionOptions": {
+        "temperature": 0.1,
+        "maxTokens": 4096
+      }
+    },
+    {
+      "title": "Qwen 3.5 9B (Fast)",
+      "provider": "ollama",
+      "model": "qwen3.5:9b",
+      "apiBase": "http://localhost:11434",
+      "contextLength": 32768,
+      "completionOptions": {
+        "temperature": 0.1,
+        "maxTokens": 4096
+      }
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Tab Autocomplete",
+    "provider": "free-trial",
+    "model": "codestral-latest"
+  },
+  "allowAnonymousTelemetry": false,
+  "embeddingsProvider": {
+    "provider": "free-trial"
+  },
+  "reranker": {
+    "name": "free-trial"
+  }
+}
