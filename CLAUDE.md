@@ -7,10 +7,13 @@ When a user points Claude Code at this repo, follow the instructions below.
 
 Installs and configures:
 - **Ollama** — local LLM server (port 11434) with reliable LaunchAgent + keep-alive
+- **Jan.ai** — alternative local LLM desktop app (port 1337, OpenAI-compatible API)
 - **Gemma 4 27B** (or RAM-appropriate model) — primary local AI model
 - **Continue** VS Code extension — AI chat + tab autocomplete
 - **Cline** VS Code extension — autonomous AI coding agent
 - **Cline watchdog** — auto-restores Cline config if VS Code updates reset it
+
+Both Ollama and Jan.ai can serve as the active backend. Use `configure-jan.sh` or `configure-cline.sh` to switch.
 
 Target machine: macOS (Apple Silicon), 8 GB RAM minimum (16 GB for Gemma 4).
 
@@ -39,7 +42,9 @@ This checks every component. Read the output — any ❌ or ⚠️ line includes
 |------|---------|
 | `scripts/setup.sh` | Master setup (resilient, re-runnable, 8 steps) |
 | `scripts/check.sh` | Full health check with fix hints |
+| `scripts/configure-jan.sh [model]` | Writes Jan.ai config into Continue + VS Code's state DB |
 | `scripts/configure-cline.sh [model]` | Writes Ollama config into VS Code's state DB |
+| `continue/config.jan.json` | Continue extension template for Jan.ai backend |
 | `scripts/pick-models.sh` | RAM-aware model selection |
 | `scripts/install-launchagent.sh` | Reliable Ollama boot service + OLLAMA_KEEP_ALIVE=-1 |
 | `scripts/install-cline-watchdog.sh` | Watchdog that auto-restores Cline after VS Code updates |
@@ -50,6 +55,19 @@ This checks every component. Read the output — any ❌ or ⚠️ line includes
 | `vscode-backup/` | User's backed-up VS Code settings (committed to repo) |
 
 ## Individual fix commands
+
+### Switch to Jan.ai backend
+```bash
+bash scripts/configure-jan.sh [model-id]
+# Then: Cmd+Shift+P → Developer: Reload Window
+```
+If Jan.ai is running and a model is loaded, the model-id arg is optional — it auto-detects.
+
+### Switch back to Ollama backend
+```bash
+bash scripts/configure-cline.sh
+# Then: Cmd+Shift+P → Developer: Reload Window
+```
 
 ### Ollama not running
 ```bash

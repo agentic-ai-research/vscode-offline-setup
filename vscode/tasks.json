@@ -2,6 +2,17 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "AI: Configure Jan.ai",
+      "type": "shell",
+      "command": "bash ${workspaceFolder}/scripts/configure-jan.sh && echo 'Done — reload VS Code with Cmd+Shift+P → Developer: Reload Window'",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "AI: Health Check",
       "type": "shell",
       "command": "bash ${workspaceFolder}/scripts/check.sh",

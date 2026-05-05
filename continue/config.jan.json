@@ -1,0 +1,24 @@
+{
+  "models": [
+    {
+      "title": "Jan (local)",
+      "provider": "openai",
+      "model": "__MODEL_ID__",
+      "apiBase": "http://localhost:1337",
+      "apiKey": "jan",
+      "contextLength": 32768,
+      "completionOptions": {
+        "temperature": 0.1,
+        "maxTokens": 4096
+      }
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Jan autocomplete",
+    "provider": "openai",
+    "model": "__MODEL_ID__",
+    "apiBase": "http://localhost:1337",
+    "apiKey": "jan"
+  },
+  "allowAnonymousTelemetry": false
+}

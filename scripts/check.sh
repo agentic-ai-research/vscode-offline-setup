@@ -28,6 +28,21 @@ echo ""
 echo "=== Offline AI Health Check ==="
 echo ""
 
+# ── Jan.ai server ─────────────────────────────────────────────────────────────
+JAN_MODELS=$(curl -sf --max-time 5 http://localhost:1337/v1/models 2>/dev/null)
+if [ -n "$JAN_MODELS" ]; then
+  JAN_MODEL_LIST=$(echo "$JAN_MODELS" | python3 -c "
+import json,sys
+data=json.load(sys.stdin)
+ids=[m['id'] for m in data.get('data',[])]
+print(', '.join(ids) if ids else 'none loaded')
+" 2>/dev/null)
+  check "Jan.ai server" ok "running at http://localhost:1337 — models: ${JAN_MODEL_LIST:-?}"
+else
+  check "Jan.ai server" warn "not running — open the Jan desktop app to start it"
+fi
+echo ""
+
 # ── Ollama binary ─────────────────────────────────────────────────────────────
 if command -v ollama &>/dev/null; then
   check "Ollama binary" ok "$(ollama --version 2>/dev/null || echo 'found')"
@@ -119,22 +134,29 @@ fi
 if [ -f ~/.continue/config.json ]; then
   if python3 -m json.tool ~/.continue/config.json &>/dev/null; then
     MODEL_COUNT=$(python3 -c "import json; d=json.load(open('$HOME/.continue/config.json')); print(len(d.get('models',[])))" 2>/dev/null)
-    check "Continue config" ok "${MODEL_COUNT:-?} model(s) configured"
+    if grep -q '"apiBase": "http://localhost:1337"' ~/.continue/config.json 2>/dev/null; then
+      check "Continue config" ok "${MODEL_COUNT:-?} model(s) → Jan.ai"
+    else
+      check "Continue config" ok "${MODEL_COUNT:-?} model(s) → Ollama"
+    fi
   else
-    check "Continue config" fail "invalid JSON — re-copy from repo: cp continue/config.json ~/.continue/config.json"
+    check "Continue config" fail "invalid JSON — re-run: scripts/configure-jan.sh"
   fi
 else
-  check "Continue config" fail "missing — run: cp continue/config.json ~/.continue/config.json"
+  check "Continue config" fail "missing — run: scripts/configure-jan.sh"
 fi
 
 # ── Cline config ──────────────────────────────────────────────────────────────
 if [ -f "$STATE_DB" ]; then
   CLINE_VAL=$(sqlite3 "$STATE_DB" "SELECT value FROM ItemTable WHERE key='saoudrizwan.claude-dev';" 2>/dev/null)
-  if echo "$CLINE_VAL" | grep -q '"apiProvider":"ollama"'; then
+  if echo "$CLINE_VAL" | grep -q '"apiProvider":"openai"' && echo "$CLINE_VAL" | grep -q 'localhost:1337'; then
+    CLINE_MODEL=$(echo "$CLINE_VAL" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('openAiModelId','?'))" 2>/dev/null)
+    check "Cline config" ok "Jan.ai → ${CLINE_MODEL}"
+  elif echo "$CLINE_VAL" | grep -q '"apiProvider":"ollama"'; then
     CLINE_MODEL=$(echo "$CLINE_VAL" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('ollamaModelId','?'))" 2>/dev/null)
     check "Cline config" ok "Ollama → ${CLINE_MODEL}"
   else
-    check "Cline config" fail "not set to Ollama — run: scripts/configure-cline.sh $PRIMARY"
+    check "Cline config" fail "not configured — run: scripts/configure-jan.sh  (or configure-cline.sh for Ollama)"
   fi
 else
   check "Cline config" warn "VS Code state DB not found — open VS Code once"
